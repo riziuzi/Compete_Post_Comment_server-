@@ -31,13 +31,20 @@ const Comment = new mongoose.Schema({
 })
 
 const Like = new mongoose.Schema({
-    commentId: String, // refer to comment 
-    userId: String,
-    createdDate: {
-      type: Number,
-      default: () => Date.now()
-    },
-})
+  commentId: {
+    type: String,
+    default: '0'
+  },
+  userId: String,
+  postId: {
+    type: String,
+    default: '0'
+  },
+  createdDate: {
+    type: Number,
+    default: () => Date.now()
+  },
+});
 
 // Middleware to update lastUpdatedDate before saving
 Comment.pre('save', function (next) {

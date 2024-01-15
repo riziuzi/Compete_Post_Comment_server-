@@ -22,6 +22,31 @@ app.use(express.json());
 app.get("/", (req, res) => {
   res.send("Compete_Post_Comment_server")
 })
+app.get("/count-comment", async (req, res) => {
+  console.log(1)
+  const postId = req.query.postId;
+  try {
+    if (!postId) {
+      return res.status(401).json({
+        error: 'Missing required fields'
+      });
+    }
+
+    const commentCount = await CommentModel.countDocuments({ postId: postId });
+
+    res.status(200).json({
+      success: true,
+      message: 'Comment count retrieved successfully',
+      commentCount: commentCount
+    });
+
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({
+      error: 'Internal Server Error'
+    });
+  }
+});
 app.get("/load-comment", async (req, res) => {
   const postId = req.query.postId
   if (!postId) {
@@ -48,6 +73,39 @@ app.get("/load-comment", async (req, res) => {
     })
   }
 })
+app.post("/load-comments", async (req, res) => {
+  const postIds = req.body.postIds;
+
+  if (!postIds || !Array.isArray(postIds)) {
+    return res.status(400).json({ error: 'postIds must be provided as an array in the request body' });
+  }
+
+  try {
+    const comments = await CommentModel.find({ postId: { $in: postIds } }).sort({ createdDate: -1 });
+
+    if (!comments || comments.length === 0) {
+      return res.status(404).json({
+        success: false,
+        error: 'Comments not found for the provided postIds'
+      });
+    }
+    const likes = await LikeModel.find({ postId: { $in: postIds } });
+
+    res.status(200).json({
+      success: true,
+      comments: comments,
+      likes: likes,
+    });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({
+      success: false,
+      error: 'Internal Server Error'
+    });
+  }
+});
+
+
 app.get("/delete-comment", async (req, res) => {                            // future: needs authentication
   try {
     const commentId = req.query.commentId
@@ -155,27 +213,40 @@ app.post("/update-comment", async (req, res) => {
 app.post("/create-like", async (req, res) => {
   try {
     console.log(`Like initiated`);
-    const { userId, commentId } = req.body;
-    if (!userId || !commentId) {
-      return res.status(401).json({
+    const { userId, commentId, postId } = req.body;
+
+    if (!userId || (commentId && postId) || (!commentId && !postId)) {
+      return res.status(400).json({
         success: false,
-        error: `UserId: ${userId} or CommentId: ${commentId} is missing`
+        error: "Invalid request. Provide either commentId or postId, but not both. Also, at least one of them is required."
       });
     }
-    const existingLike = await LikeModel.findOne({ userId, commentId });
+    let existingLike;
+
+    if (commentId) {
+      // Check for existing like with userId and commentId
+      existingLike = await LikeModel.findOne({ userId, commentId });
+    } else if (postId) {
+      // Check for existing like with userId and postId
+      existingLike = await LikeModel.findOne({ userId, postId });
+    }
+    
     if (existingLike) {
       return res.status(400).json({
         success: false,
-        error: `Like with UserId: ${userId} and CommentId: ${commentId} already exists`
+        error: `Like with UserId: ${userId}, ${commentId ? 'CommentId' : 'PostId'}: ${commentId || postId || 0} already exists`
       });
     }
+
     const newLike = new LikeModel({
-      commentId: commentId,
+      commentId: commentId || '0',
+      postId: postId || '0',
       userId: userId
     });
+
     const savedLike = await newLike.save();
     if (savedLike) {
-      res.status(201).send({
+      res.status(201).json({
         success: true,
         message: 'Like created successfully',
         like: savedLike
