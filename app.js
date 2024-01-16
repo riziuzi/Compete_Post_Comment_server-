@@ -261,6 +261,6 @@ app.post("/create-like", async (req, res) => {
 
 const port = process.env.PORT || 3010
 
-app.listen(3010, () => {
+app.listen(port, () => {
   console.log("Server started listening on localhost:3010")
 })
