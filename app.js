@@ -3,7 +3,6 @@ const app = express()
 // import libraries
 const cors = require("cors")
 const mongoose = require("mongoose")
-const jwt = require("jsonwebtoken")
 const { CommentModel, LikeModel } = require("./database")
 
 
