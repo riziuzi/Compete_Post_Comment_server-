@@ -11,7 +11,7 @@ mongoose.connect(db)
   .then(() => { console.log("MongoDB Connected") })
   .catch(err => console.log(err))
   app.use(cors({
-    origin: 'https://compete-j0qb.onrender.com/',
+    origin: 'https://compete-j0qb.onrender.com',
     methods: 'GET,HEAD,PUT,PATCH,POST,DELETE',
     credentials: true,
 }))
