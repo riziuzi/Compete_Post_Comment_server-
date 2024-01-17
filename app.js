@@ -10,11 +10,17 @@ db = "mongodb+srv://riziuzi:UqeRz3Targyx2xKO@postscommentscluster.pyzlowg.mongod
 mongoose.connect(db)
   .then(() => { console.log("MongoDB Connected") })
   .catch(err => console.log(err))
-  app.use(cors({
-    origin: 'https://compete-j0qb.onrender.com',
-    methods: 'GET,HEAD,PUT,PATCH,POST,DELETE',
-    credentials: true,
-}))
+app.options('*', cors({
+  origin: 'https://compete-j0qb.onrender.com',
+  methods: 'GET,HEAD,PUT,PATCH,POST,DELETE',
+  credentials: true,
+}));
+
+app.use(cors({
+  origin: 'https://compete-j0qb.onrender.com',
+  methods: 'GET,HEAD,PUT,PATCH,POST,DELETE',
+  credentials: true,
+}));
 app.use(express.json());
 
 
@@ -156,7 +162,7 @@ app.post("/create-comment", async (req, res) => {                           // f
     const savedComment = await comment.save();
     if (savedComment) {
       res.status(201).json({
-        success:true,
+        success: true,
         message: 'Comment created successfully',
         comment: savedComment
       });
@@ -230,7 +236,7 @@ app.post("/create-like", async (req, res) => {
       // Check for existing like with userId and postId
       existingLike = await LikeModel.findOne({ userId, postId });
     }
-    
+
     if (existingLike) {
       return res.status(400).json({
         success: false,
