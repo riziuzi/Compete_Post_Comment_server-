@@ -10,9 +10,10 @@ db = "mongodb+srv://riziuzi:UqeRz3Targyx2xKO@postscommentscluster.pyzlowg.mongod
 mongoose.connect(db)
   .then(() => { console.log("MongoDB Connected") })
   .catch(err => console.log(err))
-app.use(cors({
-  origin: 'http://localhost:3000',
-  credentials: true,
+  app.use(cors({
+    origin: 'https://compete-j0qb.onrender.com/',
+    methods: 'GET,HEAD,PUT,PATCH,POST,DELETE',
+    credentials: true,
 }))
 app.use(express.json());
 
